@@ -206,6 +206,21 @@ public class Tribute implements Competitor {
   }
 
   @Override
+  public void sendMessage(net.kyori.text.Component message) {
+    if (player != null) player.sendMessage(message);
+  }
+
+  @Override
+  public void sendWarning(net.kyori.text.Component message) {
+    if (player != null) player.sendWarning(message);
+  }
+
+  @Override
+  public void showHotbar(net.kyori.text.Component hotbar) {
+    if (player != null) player.showHotbar(hotbar);
+  }
+
+  @Override
   public void playSound(Sound sound) {
     if (player != null) player.playSound(sound);
   }

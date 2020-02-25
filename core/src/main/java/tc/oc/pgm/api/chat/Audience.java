@@ -5,6 +5,8 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.chat.CommandSenderAudience;
+import tc.oc.pgm.chat.PlayerAudience;
 import tc.oc.util.bukkit.component.Component;
 import tc.oc.util.bukkit.component.types.PersonalizedText;
 
@@ -20,6 +22,35 @@ public interface Audience {
    *
    * @param message The message to send.
    */
+  void sendMessage(net.kyori.text.Component message);
+
+  /**
+   * Send a warning chat message, with an audio cue.
+   *
+   * @param message The message to send.
+   */
+  void sendWarning(net.kyori.text.Component message);
+
+  /**
+   * Send a message above the hotbar of the {@link Audience}.
+   *
+   * @param message The message to send.
+   */
+  void showHotbar(net.kyori.text.Component message);
+
+  /**
+   * Play a {@link Sound}, by the raw asset name.
+   *
+   * @param sound The {@link Sound} to play.
+   */
+  void playSound(Sound sound);
+
+  /**
+   * Send a message to the {@link Audience}.
+   *
+   * @param message The message to send.
+   */
+  @Deprecated
   void sendMessage(Component message);
 
   /**
@@ -28,6 +59,7 @@ public interface Audience {
    * @param message The message to send.
    * @param audible Whether to play an audio cue.
    */
+  @Deprecated
   default void sendWarning(Component message, boolean audible) {
     sendMessage(
         new PersonalizedText(ChatColor.RED)
@@ -42,22 +74,17 @@ public interface Audience {
    *
    * @param message The message to send.
    */
+  @Deprecated
   default void sendWarning(Component message) {
     sendWarning(message, false);
   }
-
-  /**
-   * Play a {@link Sound}, by the raw asset name, at the {@link Audience}s location.
-   *
-   * @param sound The {@link Sound} to play.
-   */
-  void playSound(Sound sound);
 
   /**
    * Send a message above the hotbar of the {@link Audience}.
    *
    * @param message The message to send.
    */
+  @Deprecated
   void sendHotbarMessage(Component message);
 
   /**

@@ -15,6 +15,21 @@ public interface MultiAudience extends Audience {
   Iterable<? extends Audience> getAudiences();
 
   @Override
+  default void sendMessage(net.kyori.text.Component message) {
+    for (Audience a : getAudiences()) a.sendMessage(message);
+  }
+
+  @Override
+  default void sendWarning(net.kyori.text.Component message) {
+    for (Audience a : getAudiences()) a.sendWarning(message);
+  }
+
+  @Override
+  default void showHotbar(net.kyori.text.Component hotbar) {
+    for (Audience a : getAudiences()) a.showHotbar(hotbar);
+  }
+
+  @Override
   default void sendMessage(Component message) {
     for (Audience a : getAudiences()) a.sendMessage(message);
   }

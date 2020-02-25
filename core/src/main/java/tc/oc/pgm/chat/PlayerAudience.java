@@ -1,7 +1,9 @@
-package tc.oc.pgm.api.chat;
+package tc.oc.pgm.chat;
 
+import net.kyori.text.adapter.bukkit.TextAdapter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import tc.oc.pgm.api.chat.Sound;
 import tc.oc.util.bukkit.component.Component;
 import tc.oc.util.bukkit.component.types.PersonalizedText;
 import tc.oc.util.bukkit.nms.NMSHacks;
@@ -19,6 +21,11 @@ public class PlayerAudience extends CommandSenderAudience {
   @Override
   public void sendHotbarMessage(Component message) {
     NMSHacks.sendHotbarMessage(getPlayer(), message);
+  }
+
+  @Override
+  public void showHotbar(net.kyori.text.Component hotbar) {
+    TextAdapter.sendActionBar(sender, render(hotbar, sender));
   }
 
   @Override
