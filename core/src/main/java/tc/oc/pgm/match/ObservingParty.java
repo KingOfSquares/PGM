@@ -73,7 +73,7 @@ public abstract class ObservingParty extends SimpleParty {
   @Override
   public Component getChatPrefix() {
     if (chatPrefix == null) {
-      chatPrefix = new PersonalizedText("(Obs) ", getBungeeColor());
+      chatPrefix = new PersonalizedText("[Observers] ", getBungeeColor());
     }
     return chatPrefix;
   }

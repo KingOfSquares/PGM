@@ -210,7 +210,7 @@ public class Team extends SimpleParty implements Competitor, Feature<TeamFactory
   public Component getChatPrefix() {
     if (chatPrefix == null) {
       this.chatPrefix =
-          new PersonalizedText("(" + getShortName() + ") ", ComponentUtils.convert(getColor()));
+          new PersonalizedText("[" + getShortName() + "] ", ComponentUtils.convert(getColor()));
     }
     return chatPrefix;
   }
