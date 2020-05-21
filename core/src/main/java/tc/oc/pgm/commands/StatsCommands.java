@@ -15,7 +15,7 @@ import tc.oc.pgm.util.text.TextTranslations;
 public class StatsCommands {
 
   @Command(
-      aliases = {"stats"},
+      aliases = {"matchstats", "mstats"},
       desc = "Shows your stats for this match")
   public static void checkStats(CommandSender sender, MatchPlayer player, Match match)
       throws CommandException {
