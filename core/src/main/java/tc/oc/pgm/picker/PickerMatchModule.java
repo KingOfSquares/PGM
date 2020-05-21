@@ -337,8 +337,7 @@ public class PickerMatchModule implements MatchModule, Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void rightClickIcon(final ObserverInteractEvent event) {
     final boolean right = event.getClickType() == ClickType.RIGHT;
-    final boolean left = event.getClickType() == ClickType.LEFT;
-    if ((!right && !left) || InventoryUtils.isNothing(event.getClickedItem())) return;
+    if (!right || InventoryUtils.isNothing(event.getClickedItem())) return;
 
     final ItemStack hand = event.getClickedItem();
     String displayName = hand.getItemMeta().getDisplayName();
@@ -352,13 +351,13 @@ public class PickerMatchModule implements MatchModule, Listener {
 
     if (hand.getType() == Button.JOIN.material) {
       handled = true;
-      if (right && canOpenWindow(player) && settingEnabled(player, true)) {
+      if (canOpenWindow(player) && settingEnabled(player, true)) {
         showWindow(player);
       } else {
         // If there is nothing to pick or setting is disabled, just join immediately
         jmm.join(player, null);
       }
-    } else if (hand.getType() == Button.LEAVE.material && left) {
+    } else if (hand.getType() == Button.LEAVE.material) {
       jmm.leave(player);
     }
 
