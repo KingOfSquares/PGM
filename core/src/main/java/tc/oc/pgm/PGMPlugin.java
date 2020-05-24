@@ -64,6 +64,7 @@ import tc.oc.pgm.commands.ClassCommands;
 import tc.oc.pgm.commands.CycleCommands;
 import tc.oc.pgm.commands.DestroyableCommands;
 import tc.oc.pgm.commands.FreeForAllCommands;
+import tc.oc.pgm.commands.FreezeCommands;
 import tc.oc.pgm.commands.GoalCommands;
 import tc.oc.pgm.commands.InventoryCommands;
 import tc.oc.pgm.commands.JoinCommands;
@@ -451,6 +452,7 @@ public class PGMPlugin extends JavaPlugin implements PGM, Listener {
     node.registerCommands(new ObserverCommands());
     node.registerCommands(new MapPoolCommands());
     node.registerCommands(new StatsCommands());
+    node.registerCommands(new FreezeCommands());
 
     if (config.isCommunityMode()) {
       final ModerationCommands modCommands =

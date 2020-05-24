@@ -1,4 +1,4 @@
-package tc.oc.pgm.community.modules;
+package tc.oc.pgm.modules;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

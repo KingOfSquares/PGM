@@ -45,7 +45,7 @@ import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.player.Username;
 import tc.oc.pgm.api.player.VanishManager;
 import tc.oc.pgm.community.events.PlayerPunishmentEvent;
-import tc.oc.pgm.community.modules.FreezeMatchModule;
+import tc.oc.pgm.modules.FreezeMatchModule;
 import tc.oc.pgm.listeners.ChatDispatcher;
 import tc.oc.pgm.util.PrettyPaginatedComponentResults;
 import tc.oc.pgm.util.UsernameFormatUtils;
@@ -124,64 +124,6 @@ public class ModerationCommands implements Listener {
 
     // Send message
     viewer.sendMessage(staff);
-  }
-
-  @Command(
-      aliases = {"frozenlist", "fls", "flist"},
-      desc = "View a list of frozen players",
-      perms = Permissions.FREEZE)
-  public void sendFrozenList(Audience sender, Match match) {
-    FreezeMatchModule fmm = match.getModule(FreezeMatchModule.class);
-
-    if (fmm.getFrozenPlayers().isEmpty() && fmm.getOfflineFrozenCount() < 1) {
-      sender.sendWarning(TranslatableComponent.of("moderation.freeze.frozenList.none"));
-      return;
-    }
-
-    // Online Players
-    if (!fmm.getFrozenPlayers().isEmpty()) {
-      Component names =
-          TextComponent.join(
-              TextComponent.of(", ", TextColor.GRAY),
-              fmm.getFrozenPlayers().stream()
-                  .map(m -> m.getName(NameStyle.FANCY))
-                  .collect(Collectors.toList()));
-      sender.sendMessage(
-          formatFrozenList(
-              "moderation.freeze.frozenList.online", fmm.getFrozenPlayers().size(), names));
-    }
-
-    // Offline Players
-    if (fmm.getOfflineFrozenCount() > 0) {
-      Component names = TextComponent.of(fmm.getOfflineFrozenNames());
-      sender.sendMessage(
-          formatFrozenList(
-              "moderation.freeze.frozenList.offline", fmm.getOfflineFrozenCount(), names));
-    }
-  }
-
-  private Component formatFrozenList(String key, int count, Component names) {
-    return TranslatableComponent.of(key, TextColor.GRAY)
-        .args(TextComponent.of(Integer.toString(count), TextColor.AQUA), names);
-  }
-
-  @Command(
-      aliases = {"freeze", "fz", "f"},
-      usage = "<player>",
-      flags = "s",
-      desc = "Toggle a player's frozen state",
-      perms = Permissions.FREEZE)
-  public void freeze(CommandSender sender, Match match, Player target, @Switch('s') boolean silent)
-      throws CommandException {
-    setFreeze(sender, match, target, silent);
-  }
-
-  private void setFreeze(CommandSender sender, Match match, Player target, boolean silent) {
-    FreezeMatchModule fmm = match.getModule(FreezeMatchModule.class);
-    MatchPlayer player = match.getPlayer(target);
-    if (player != null) {
-      fmm.setFrozen(sender, player, !fmm.isFrozen(player), silent);
-    }
   }
 
   @Command(
