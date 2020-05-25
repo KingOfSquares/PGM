@@ -84,8 +84,9 @@ public class StatsMatchModule implements MatchModule, Listener {
                   new PersonalizedText(Integer.toString(kills), ChatColor.GREEN),
                   new PersonalizedText(Integer.toString(killstreak), ChatColor.GREEN),
                   new PersonalizedText(Integer.toString(deaths), ChatColor.RED),
-                  new PersonalizedText(kd, ChatColor.GREEN))
-              .color(ChatColor.GRAY)
+                  new PersonalizedText(kd, ChatColor.AQUA))
+              .color(ChatColor.WHITE)
+              .bold(true)
               .render());
     }
   }
