@@ -18,7 +18,13 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+
+import net.kyori.text.Component;
+import net.kyori.text.ComponentBuilder;
+import net.kyori.text.TextComponent;
+import net.kyori.text.format.TextColor;
 import net.md_5.bungee.api.ChatColor;
+import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.map.MapContext;
 import tc.oc.pgm.api.map.MapInfo;
 import tc.oc.pgm.api.map.MapLibrary;
@@ -27,6 +33,7 @@ import tc.oc.pgm.api.map.exception.MapException;
 import tc.oc.pgm.api.map.exception.MapMissingException;
 import tc.oc.pgm.api.map.factory.MapFactory;
 import tc.oc.pgm.api.map.factory.MapSourceFactory;
+import tc.oc.pgm.listeners.ChatDispatcher;
 import tc.oc.pgm.util.StringUtils;
 import tc.oc.pgm.util.UsernameResolver;
 
@@ -86,24 +93,21 @@ public class MapLibraryImpl implements MapLibrary {
     fail = failed.size() - fail;
     ok = maps.size() - ok;
 
+    TextComponent.Builder message = TextComponent.builder();
+
     if (fail <= 0 && ok <= 0) {
-      logger.info("No new maps found");
+      message.append("No new maps found");
     } else if (fail <= 0) {
-      logger.info("Loaded " + ChatColor.YELLOW + ok + ChatColor.RESET + " new maps");
+      message.append("Loaded ").append(TextComponent.of(ok, TextColor.YELLOW)).append(" new maps");
     } else if (ok <= 0) {
-      logger.info("Failed to load " + ChatColor.YELLOW + fail + ChatColor.RESET + " maps");
+      message.append("Failed to load ").append(TextComponent.of(fail, TextColor.YELLOW)).append(" maps");
     } else {
-      logger.info(
-          "Loaded "
-              + ChatColor.YELLOW
-              + ok
-              + ChatColor.RESET
-              + " new maps, failed to load "
-              + ChatColor.YELLOW
-              + fail
-              + ChatColor.RESET
-              + " maps");
+      message.append("Loaded ").append(TextComponent.of(ok, TextColor.YELLOW)).append(" new maps, failed to load ").append(TextComponent.of(fail, TextColor.YELLOW)).append(" maps");
     }
+
+    //Dont try to send any messages on server startup...
+    if(PGM.get().getMatchManager() != null)    PGM.get().getMatchManager().getMatches().forEachRemaining(m -> ChatDispatcher.broadcastAdminChatMessage(message.build(), m));
+
   }
 
   @Override
