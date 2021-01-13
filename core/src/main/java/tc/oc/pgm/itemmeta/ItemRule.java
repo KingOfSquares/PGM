@@ -1,13 +1,14 @@
 package tc.oc.pgm.itemmeta;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Set;
+import org.bukkit.Material;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.util.ImmutableMaterialSet;
 import tc.oc.pgm.util.inventory.InventoryUtils;
 import tc.oc.pgm.util.material.MaterialMatcher;
 
@@ -56,10 +57,10 @@ public class ItemRule {
     }
   }
 
-  private static ImmutableMaterialSet unionMaterials(
-      ImmutableMaterialSet a, ImmutableMaterialSet b) {
+  private static ImmutableSet<Material> unionMaterials(
+      ImmutableSet<Material> a, ImmutableSet<Material> b) {
     if (a.containsAll(b)) return a;
     if (b.containsAll(a)) return b;
-    return ImmutableMaterialSet.of(Sets.union(a, b));
+    return Sets.union(a, b).immutableCopy();
   }
 }

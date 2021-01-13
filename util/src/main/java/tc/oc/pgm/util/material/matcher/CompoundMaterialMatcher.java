@@ -1,5 +1,6 @@
 package tc.oc.pgm.util.material.matcher;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import org.bukkit.Material;
@@ -11,7 +12,7 @@ import tc.oc.pgm.util.material.MaterialMatcher;
 public class CompoundMaterialMatcher implements MaterialMatcher {
 
   private final Collection<MaterialMatcher> children;
-  private @Nullable ImmutableMaterialSet materials;
+  private @Nullable ImmutableSet<Material> materials;
 
   public CompoundMaterialMatcher(Collection<MaterialMatcher> children) {
     this.children = children;
@@ -44,7 +45,7 @@ public class CompoundMaterialMatcher implements MaterialMatcher {
   @Override
   public Collection<Material> getMaterials() {
     if (materials == null) {
-      ImmutableMaterialSet.Builder builder = ImmutableMaterialSet.builder();
+      ImmutableSet.Builder<Material> builder = ImmutableSet.builder();
       for (MaterialMatcher child : children) {
         for (Material material : child.getMaterials()) {
           builder.add(material);
