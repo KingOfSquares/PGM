@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +35,6 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchModule;
@@ -55,8 +56,10 @@ import tc.oc.pgm.flag.event.FlagPickupEvent;
 import tc.oc.pgm.flag.event.FlagStateChangeEvent;
 import tc.oc.pgm.flag.state.Carried;
 import tc.oc.pgm.teams.Team;
+import tc.oc.pgm.teams.TeamMatchModule;
 import tc.oc.pgm.tracker.TrackerMatchModule;
 import tc.oc.pgm.tracker.info.ProjectileInfo;
+import tc.oc.pgm.util.collection.DefaultMapAdapter;
 import tc.oc.pgm.util.menu.InventoryMenu;
 import tc.oc.pgm.util.menu.InventoryMenuItem;
 import tc.oc.pgm.util.menu.pattern.DoubleRowMenuArranger;
@@ -71,7 +74,14 @@ public class StatsMatchModule implements MatchModule, Listener {
   private final Map<UUID, PlayerStats> allPlayerStats = new HashMap<>();
   // Since Bukkit#getOfflinePlayer reads the cached user files, and those files have an expire date
   // + will be wiped if X amount of players join, we need a separate cache for players with stats
-  private final Map<UUID, String> cachedUsernames = new HashMap<>();
+  private final Set<OfflinePlayerInfoBundle> cachedUserInfo = new HashSet<>();
+
+  // To be able to display the stats of dead player in blitz/players that left the match
+  // we keep around a cache of which teams players belong to to avoid calling
+  // #getLastTeam on every left player when the match ends.
+  // We can also use this to avoid checking online players
+  private final DefaultMapAdapter<String, Set<OfflinePlayerInfoBundle>> cachedTeamRelations =
+      new DefaultMapAdapter<>(new HashSet<>(), true);
 
   private final boolean verboseStats = PGM.get().getConfiguration().showVerboseStats();
   private final Duration showAfter = PGM.get().getConfiguration().showStatsAfter();
@@ -281,35 +291,57 @@ public class StatsMatchModule implements MatchModule, Listener {
 
   @EventHandler
   public void onToolClick(PlayerInteractEvent event) {
-    if (!verboseStats
-        || !match.isFinished()
+    if (event.getPlayer().getItemInHand().getType() != Material.PAPER) return;
+    if (!match.isFinished()
+        || !verboseStats
         || !match.getCompetitors().stream().allMatch(c -> c instanceof Team)) return;
     Action action = event.getAction();
     if ((action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
-      ItemStack item = event.getPlayer().getItemInHand();
-
-      if (item.getType() == Material.PAPER) {
-        MatchPlayer player = match.getPlayer(event.getPlayer());
-        if (player == null) return;
-        giveVerboseStatsItem(player, true);
-      }
+      MatchPlayer player = match.getPlayer(event.getPlayer());
+      if (player == null) return;
+      giveVerboseStatsItem(player, true);
     }
   }
+
+  private List<InventoryMenuItem> teamItems = null;
 
   public void giveVerboseStatsItem(MatchPlayer player, boolean forceOpen) {
     // Find out if verbose stats is relevant for this match
     final Collection<Competitor> competitors = match.getCompetitors();
-    boolean showAllVerboseStats =
-        verboseStats && competitors.stream().allMatch(c -> c instanceof Team);
-    if (!showAllVerboseStats) return;
 
-    final List<InventoryMenuItem> items =
-        competitors.stream()
-            .map(c -> new TeamStatsInventoryMenuItem(match, c))
-            .collect(Collectors.toList());
+    if (!verboseStats || !competitors.stream().allMatch(c -> c instanceof Team)) return;
+
+    if (this.teamItems == null) {
+      TeamMatchModule tmm = match.needModule(TeamMatchModule.class);
+      Collection<MatchPlayer> observers = match.getObservers();
+      List<InventoryMenuItem> items = new ArrayList<>(competitors.size());
+      for (Competitor competitor : competitors) {
+        Collection<MatchPlayer> relevantObservers =
+            observers.stream()
+                .filter(o -> tmm.getLastTeam(o.getId()) == competitor)
+                .collect(Collectors.toSet());
+        Collection<OfflinePlayerInfoBundle> relevantOfflinePlayers =
+            cachedUserInfo.stream()
+                .filter(o -> tmm.getLastTeam(o.getUuid()) == competitor)
+                .collect(Collectors.toSet());
+        items.add(
+            new TeamStatsInventoryMenuItem(
+                match, competitor, relevantObservers, relevantOfflinePlayers));
+      }
+      this.teamItems = items;
+    }
+
+    List<InventoryMenuItem> items = new ArrayList<>(this.teamItems);
 
     // Add the player item in the middle
-    items.add((items.size() - 1) / 2 + 1, new PlayerStatsInventoryMenuItem(player));
+    items.add(
+        (items.size() - 1) / 2 + 1,
+        new PlayerStatsInventoryMenuItem(
+            player.getId(),
+            this.getPlayerStat(player),
+            player.getBukkit().getSkin(),
+            player.getNameLegacy(),
+            player.getName().color()));
 
     final InventoryMenu menu =
         new InventoryMenu(
@@ -386,20 +418,27 @@ public class StatsMatchModule implements MatchModule, Listener {
   @EventHandler
   public void onPlayerLeave(PlayerQuitEvent event) {
     Player player = event.getPlayer();
-    if (allPlayerStats.containsKey(player.getUniqueId()))
-      cachedUsernames.put(player.getUniqueId(), player.getName());
+    if (allPlayerStats.containsKey(player.getUniqueId())) {
+      cachedUserInfo.add(
+          new OfflinePlayerInfoBundle(
+              player.getUniqueId(), player.getSkin(), player.getDisplayName()));
+    }
   }
 
   @EventHandler
   public void onPlayerJoin(PlayerJoinEvent event) {
     UUID playerUUID = event.getPlayer().getUniqueId();
-    cachedUsernames.remove(playerUUID);
+    cachedUserInfo.removeIf(o -> o.getUuid().equals(playerUUID));
   }
 
   private Component playerName(UUID playerUUID) {
     return player(
         Bukkit.getPlayer(playerUUID),
-        cachedUsernames.getOrDefault(playerUUID, "Unknown"),
+        cachedUserInfo.stream()
+            .filter(o -> o.getUuid().equals(playerUUID))
+            .findFirst()
+            .map(OfflinePlayerInfoBundle::getName)
+            .orElse("Unknown"),
         NameStyle.FANCY);
   }
 
