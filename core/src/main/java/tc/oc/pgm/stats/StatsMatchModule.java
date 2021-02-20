@@ -341,14 +341,14 @@ public class StatsMatchModule implements MatchModule, Listener {
             this.getPlayerStat(player),
             player.getBukkit().getSkin(),
             player.getNameLegacy(),
-            player.getName().color()));
+            player.getParty().getName().color()));
 
     final InventoryMenu menu =
         new InventoryMenu(
             match.getWorld(),
             verboseStatsTitle,
             items,
-            competitors.size() <= 4 ? new SingleRowMenuArranger() : new DoubleRowMenuArranger());
+            competitors.size() <= 5 ? new SingleRowMenuArranger() : new DoubleRowMenuArranger());
 
     player
         .getInventory()

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -45,7 +44,6 @@ public class TeamStatsInventoryMenuItem implements InventoryMenuItem {
     Collection<MatchPlayer> players = team.getPlayers();
     List<InventoryMenuItem> items =
         new ArrayList<>(players.size() + relevantObservers.size() + relevantOfflinePlayers.size());
-    TextColor teamColor = team.getName().color();
     items.addAll(
         Stream.concat(players.stream(), relevantObservers.stream())
             .map(
@@ -55,7 +53,7 @@ public class TeamStatsInventoryMenuItem implements InventoryMenuItem {
                         smm.getPlayerStat(p),
                         p.getBukkit().getSkin(),
                         p.getNameLegacy(),
-                        teamColor))
+                        p.getParty().getName().color()))
             .collect(Collectors.toList()));
     items.addAll(
         relevantOfflinePlayers.stream()
@@ -66,7 +64,7 @@ public class TeamStatsInventoryMenuItem implements InventoryMenuItem {
                         smm.getPlayerStat(o.getUuid()),
                         o.getSkin(),
                         o.getName(),
-                        teamColor))
+                        NamedTextColor.DARK_AQUA))
             .collect(Collectors.toSet()));
 
     this.teamSubGUI =
