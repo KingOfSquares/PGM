@@ -217,7 +217,8 @@ public class InventoryMenu implements Listener {
 
   @EventHandler
   public void onInventoryClick(final InventoryClickEvent event) {
-    if (inventoryMenuItems == null
+    if (this.world == null
+        || event.getWorld() == null
         || this.world != event.getWorld()
         || event.getCurrentItem() == null
         || event.getCurrentItem().getItemMeta() == null
